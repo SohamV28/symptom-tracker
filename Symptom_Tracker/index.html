@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Health Symptom Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    input,
+    textarea,
+    button {
+      font-size: 1.1rem;
+      padding: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <img src="symimg.jpg" alt="logo" width="70" height="80">
+    <h1>Health Symptom Tracker</h1>
+    <p>Track your symptoms. Understand your health.</p>
+    <nav>
+      <a href="about.html">About</a>
+      <a href="index.html">Tracker</a>
+      <a href="graph.html">Graph</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="intro">
+      <h2>About the App</h2>
+      <p>
+        Our Symptom Tracker helps you log your daily health symptoms with ease. Track your symptoms, identify patterns,
+        and provide accurate info to your doctor.
+      </p>
+    </section>
+
+    <section class="form-section">
+      <h2>Track a Symptom</h2>
+      <form id="symptom-form">
+        <input list="common-symptoms" id="symptomName" placeholder="Symptom Name" required />
+        <datalist id="common-symptoms">
+          <option value="Headache"></option>
+          <option value="Fatigue"></option>
+          <option value="Nausea"></option>
+          <option value="Fever"></option>
+          <option value="Pain"></option>
+        </datalist>
+        <input type="date" id="symptomDate" required />
+
+        <label for="severity">Severity (1-10):</label>
+        <input type="range" id="severity" min="1" max="10" value="5"
+          oninput="document.getElementById('severityValue').innerText = this.value" />
+        <p><strong><span id="severityValue">5</span></strong></p>
+
+        <textarea id="notes" rows="3" placeholder="Additional Notes (optional)"></textarea>
+        <button type="submit">Add Symptom</button>
+      </form>
+    </section>
+
+    <section class="history">
+      <h2>Your Symptom History</h2>
+      <div id="symptom-history"></div>
+
+      <button onclick="exportCSV()">Export to CSV 📄</button>
+    </section>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('symptom-form');
+      const historyContainer = document.getElementById('symptom-history');
+
+      const loadSymptoms = () => {
+        historyContainer.innerHTML = '';
+        const symptoms = JSON.parse(localStorage.getItem('symptoms')) || [];
+
+        symptoms.forEach((symptom, index) => {
+          const card = document.createElement('div');
+          card.className = 'symptom-card';
+          card.innerHTML = `
+            <strong>${symptom.name}</strong><br>
+            <span><strong>Date:</strong> ${symptom.date}</span><br>
+            <span><strong>Severity:</strong> ${symptom.severity}</span><br>
+            <span><strong>Notes:</strong> ${symptom.notes || 'None'}</span><br>
+            <button onclick="deleteSymptom(${index})">Delete</button>
+          `;
+          historyContainer.appendChild(card);
+        });
+      };
+
+      const deleteSymptom = (index) => {
+        const symptoms = JSON.parse(localStorage.getItem('symptoms')) || [];
+        symptoms.splice(index, 1);
+        localStorage.setItem('symptoms', JSON.stringify(symptoms));
+        loadSymptoms();
+      };
+
+      window.deleteSymptom = deleteSymptom;
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('symptomName').value;
+        const date = document.getElementById('symptomDate').value;
+        const severity = document.getElementById('severity').value;
+        const notes = document.getElementById('notes').value;
+
+        const symptoms = JSON.parse(localStorage.getItem('symptoms')) || [];
+        symptoms.push({ name, date, severity, notes });
+        localStorage.setItem('symptoms', JSON.stringify(symptoms));
+
+        form.reset();
+        document.getElementById('severityValue').innerText = '5';
+        loadSymptoms();
+      });
+
+      loadSymptoms();
+    });
+
+    function exportCSV() {
+      const symptoms = JSON.parse(localStorage.getItem('symptoms')) || [];
+      if (!symptoms.length) return alert('No symptoms available.');
+      let csv = '"Symptom Name","Date","Severity","Notes"\n';
+      symptoms.forEach(s => {
+        csv += `"${s.name}","${s.date}","${s.severity}","${s.notes || 'None'}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'symptom_report.csv';
+      link.click();
+    }
+  </script>
+</body>
+
+</html>

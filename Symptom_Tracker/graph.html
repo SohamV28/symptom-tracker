@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symptom Tracker Graph</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f4f8;
+            text-align: center;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+
+        canvas {
+            max-width: 1000px;
+            width: 100%;
+            height: 500px;
+            margin: auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        button,
+        a.button-link {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px 10px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 6px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        button:hover,
+        a.button-link:hover {
+            background-color: #0056b3;
+        }
+
+        .note {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Your Symptom Severity Over Time</h1>
+
+    <div>
+        <a href="index.html" class="button-link">← Back to Tracker</a>
+        <button onclick="clearSymptoms()">🗑️ Reset All Symptoms</button>
+    </div>
+
+
+    <canvas id="symptomChart"></canvas>
+
+    <script>
+        const ctx = document.getElementById('symptomChart').getContext('2d');
+        let symptoms = JSON.parse(localStorage.getItem('symptoms')) || [];
+
+        const labels = symptoms.map(s => s.date);
+        const severityData = symptoms.map(s => parseInt(s.severity));
+
+        let symptomChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Severity Level',
+                    data: severityData,
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#007bff'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Severity (1-10)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Daily Symptom Severity',
+                        font: { size: 20 }
+                    },
+                    legend: {
+                        labels: {
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        function clearSymptoms() {
+            if (confirm('Are you sure you want to delete all symptoms?')) {
+                localStorage.removeItem('symptoms');
+                location.reload();
+            }
+        }
+    </script>
+</body>
+
+</html>
